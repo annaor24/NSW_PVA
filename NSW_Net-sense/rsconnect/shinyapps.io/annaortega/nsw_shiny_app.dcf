@@ -1,0 +1,10 @@
+name: nsw_shiny_app
+title:
+username: annaortega
+account: annaortega
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13075961
+bundleId: 9248888
+url: https://annaortega.shinyapps.io/nsw_shiny_app/
+version: 1
