@@ -1,14 +1,34 @@
 library(shiny)
 library(ggplot2)
-library(readxl)
 library(knitr)
 library(openxlsx)
+library(httr)
 
 # Set a predefined password
 password <- "NSW2024"  # Change "your_password" to the password you want
 
-# Load the Excel sheet with data
-data <- read.xlsx("NSW_ShinyApp_2023.09.13.xlsx", sheet = "AllData")
+# Define the URL to the dataset
+url <- "https://github.com/annaor24/NSW_PVA/raw/main/NSW_Net-sense/NSW_ShinyApp_2023.09.13.xlsx"
+
+# Function to download and read the Excel file
+get_data <- function() {
+  response <- GET(url)
+  
+  if (response$status_code == 200) {
+    # Save the downloaded file to a temporary location
+    temp_file <- tempfile(fileext = ".xlsx")
+    writeBin(content(response, "raw"), temp_file)
+    
+    # Read the Excel file from the temporary location
+    data <- read.xlsx(temp_file, sheet = "AllData")
+    return(data)
+  } else {
+    stop(paste("Failed to download file, status code:", response$status_code))
+  }
+}
+
+# Load the data
+data <- get_data()
 
 # Define UI
 ui <- fluidPage(
@@ -35,20 +55,20 @@ server <- function(input, output, session) {
       # Show the app UI once the password is correct
       fluidPage(
         tags$style(HTML("
-          body {
-            background-color: #add8e6;
-          }
-          .shiny-table {
-            background-color: white;
-          }
-        ")),
+                    body {
+                        background-color: #add8e6;
+                    }
+                    .shiny-table {
+                        background-color: white;
+                    }
+                ")),
         titlePanel(tags$strong("Net-sense, a NSW PVA tool", style = "color: black;")),
         p("By inputting the number of leatherbacks bycaught in NSW shark meshing nets within a year, this app will generate an output plot that shows the population's fate after ten generations if that level of annual bycatch persisted.", style = "font-weight: bold;"),
         helpText("To use this tool, ", style = "color: black;"),
         helpText(
           "1. Decide whether the sex of the bycaught leatherbacks is known. Then, use the drop down box for ",
           tags$strong("Is the sex of bycaught leatherbacks known?"), " to select Yes or No. ",
-          HTML("<span style='display: inline-block; width: 20px;'></span>"), 
+          HTML("<span style='display: inline-block; width: 20px;'></span> "), 
           "Note: this assumes that all leatherbacks caught are dead on retrieval or suffer post-release mortality; i.e. worst-case scenario",
           style = "color: black;"
         ),
